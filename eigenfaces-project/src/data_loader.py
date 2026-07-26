@@ -1,17 +1,10 @@
-# src/data_loader.py
-# ═══════════════════════════════════════════════════════════════
-# مسئولیت: بارگذاری، اعتبارسنجی، و تقسیم داده‌های Olivetti
-#
-# این ماژول تنها نقطه تماس با داده خام است.
-# هیچ ماژول دیگری مستقیماً داده بارگذاری نمی‌کند.
-# ═══════════════════════════════════════════════════════════════
 
 import numpy as np
 from sklearn.datasets import fetch_olivetti_faces
 import sys
 import os
 
-# اضافه کردن مسیر ریشه برای import از config
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from config import (
     DATA_DIR,
@@ -23,43 +16,11 @@ from config import (
 )
 
 
-# ══════════════════════════════════════════════════════
-# توابع اصلی
-# ══════════════════════════════════════════════════════
-
 def load_faces(
     shuffle: bool = True,
     random_state: int = RANDOM_STATE
 ) -> tuple:
-    """
-    داده‌های Olivetti Faces را بارگذاری و اعتبارسنجی می‌کند.
 
-    این مجموعه شامل ۴۰۰ تصویر از ۴۰ نفر مختلف است.
-    هر تصویر ۶۴×۶۴ پیکسل دارد و به‌صورت بردار ۴۰۹۶ بعدی ذخیره شده.
-    مقادیر پیکسل در بازه [0, 1] نرمال‌سازی شده‌اند.
-
-    Parameters
-    ----------
-    shuffle : bool
-        آیا داده‌ها قبل از بازگشت مخلوط شوند؟
-    random_state : int
-        seed برای تکرارپذیری
-
-    Returns
-    -------
-    X : np.ndarray, shape (400, 4096)
-        ماتریس داده — هر سطر یک تصویر مسطح‌شده است
-    y : np.ndarray, shape (400,)
-        برچسب هر تصویر — شناسه فرد از 0 تا 39
-
-    Examples
-    --------
-    >>> X, y = load_faces()
-    >>> X.shape
-    (400, 4096)
-    >>> np.unique(y)
-    array([ 0,  1,  2, ..., 39])
-    """
     print("Loading Olivetti Faces dataset...")
 
     faces = fetch_olivetti_faces(
@@ -89,24 +50,6 @@ def split_train_test(
     n_train: int = N_TRAIN_PER_PERSON
 ) -> tuple:
     """
-    داده را به مجموعه آموزش و آزمون تقسیم می‌کند.
-
-    استراتژی تقسیم:
-        برای هر فرد، اولین n_train تصویر → آموزش
-        باقی‌مانده تصاویر       → آزمون
-
-    این استراتژی تضمین می‌کند که هر فرد هم در آموزش
-    و هم در آزمون نمایندگی دارد (stratified split).
-
-    Parameters
-    ----------
-    X : np.ndarray, shape (m, n)
-        ماتریس داده
-    y : np.ndarray, shape (m,)
-        برچسب‌ها
-    n_train : int
-        تعداد تصاویر هر فرد در مجموعه آموزش
-
     Returns
     -------
     X_train : np.ndarray, shape (n_train * N_PERSONS, n)
@@ -144,31 +87,13 @@ def get_person_images(
     y: np.ndarray,
     person_id: int
 ) -> np.ndarray:
-    """
-    تمام تصاویر یک فرد مشخص را برمی‌گرداند.
 
-    Parameters
-    ----------
-    person_id : int
-        شناسه فرد (0 تا 39)
-
-    Returns
-    -------
-    np.ndarray, shape (n_images, 4096)
-    """
     mask = y == person_id
     return X[mask]
 
 
-# ══════════════════════════════════════════════════════
-# توابع کمکی داخلی
-# ══════════════════════════════════════════════════════
-
 def _validate(X: np.ndarray, y: np.ndarray) -> None:
-    """
-    اعتبارسنجی ساختار و محتوای داده‌ها.
-    در صورت وجود مشکل، خطای توصیفی ایجاد می‌کند.
-    """
+
     if X.shape != (N_SAMPLES, N_FEATURES):
         raise ValueError(
             f"Expected X.shape = ({N_SAMPLES}, {N_FEATURES}), "
@@ -193,21 +118,8 @@ def _validate(X: np.ndarray, y: np.ndarray) -> None:
         )
 
 
-# ══════════════════════════════════════════════════════
-# آمار توصیفی
-# ══════════════════════════════════════════════════════
-
 def dataset_summary(X: np.ndarray, y: np.ndarray) -> dict:
-    """
-    آمار توصیفی مجموعه داده را محاسبه و برمی‌گرداند.
 
-    Returns
-    -------
-    dict شامل:
-        n_samples, n_features, n_persons,
-        n_images_per_person, pixel_min, pixel_max,
-        pixel_mean, pixel_std, max_possible_rank
-    """
     persons, counts = np.unique(y, return_counts=True)
 
     summary = {
@@ -233,7 +145,6 @@ def dataset_summary(X: np.ndarray, y: np.ndarray) -> dict:
 
 
 def print_summary(summary: dict) -> None:
-    """آمار توصیفی را به‌صورت خوانا چاپ می‌کند."""
     print("=" * 50)
     print("DATASET SUMMARY")
     print("=" * 50)
